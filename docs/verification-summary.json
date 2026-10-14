@@ -1,0 +1,45 @@
+{
+  "date": "2026-09-13",
+  "reports": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "passed": true,
+      "uncaughtErrors": [],
+      "missingAssets": [],
+      "externalAssetRequests": [],
+      "sequenceFramesDecoded": 76,
+      "interactions": [
+        {
+          "name": "desktop menu opens",
+          "passed": true
+        }
+      ],
+      "sourceDiagnostic": [
+        "Could not find a View Model linked to Artboard Artboard."
+      ]
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "passed": true,
+      "uncaughtErrors": [],
+      "missingAssets": [],
+      "externalAssetRequests": [],
+      "sequenceFramesDecoded": 76,
+      "interactions": [
+        {
+          "name": "mobile menu opens",
+          "passed": true
+        }
+      ],
+      "sourceDiagnostic": [
+        "Could not find a View Model linked to Artboard Artboard."
+      ]
+    }
+  ]
+}

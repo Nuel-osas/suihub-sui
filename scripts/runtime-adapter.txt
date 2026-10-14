@@ -1,0 +1,48 @@
+/* Lifecycle adapter for the captured Sui homepage animation code. */
+window.suiModules = {};
+window.mountSui = function () {
+  const cleanups = [], timers = new Set(), frames = new Set(), observers = new Set();
+  const realWindow = window, realDocument = document;
+  const later = (fn, delay, ...args) => {
+    const id = realWindow.setTimeout(() => { timers.delete(id); fn(...args); }, delay);
+    timers.add(id); return id;
+  };
+  const raf = fn => {
+    const id = realWindow.requestAnimationFrame(time => { frames.delete(id); fn(time); });
+    frames.add(id); return id;
+  };
+  const proxy = target => new Proxy(target, {
+    get(object, key) {
+      if (key === 'addEventListener') return (type, callback, options) => {
+        if (type === 'DOMContentLoaded' || type === 'load' && object === realWindow) {
+          later(callback, 0); return;
+        }
+        object.addEventListener(type, callback, options);
+        cleanups.push(() => object.removeEventListener(type, callback, options));
+      };
+      const value = Reflect.get(object, key, object);
+      return typeof value === 'function' && (object === realDocument || Function.prototype.toString.call(value).includes('[native code]')) ? value.bind(object) : value;
+    },
+  });
+  const Observer = class extends ResizeObserver {
+    constructor(callback) { super(callback); observers.add(this); }
+  };
+  const contexts = [];
+  // The captured English page can initialize without the hosted translation service.
+  const oldReady = window.onWeglotReady;
+  window.onWeglotReady = () => {};
+  for (const name of ['global', 'home', 'carousel', 'dotted']) {
+    const context = gsap.context(() => {
+      const dispose = window.suiModules[name](proxy(realWindow),proxy(realDocument),later,
+        realWindow.clearTimeout.bind(realWindow),raf,realWindow.cancelAnimationFrame.bind(realWindow),Observer);
+      if (typeof dispose === 'function') cleanups.push(dispose);
+    });
+    contexts.push(context);
+  }
+  return () => {
+    timers.forEach(clearTimeout); frames.forEach(cancelAnimationFrame);
+    observers.forEach(observer => observer.disconnect());
+    cleanups.reverse().forEach(fn => fn()); contexts.reverse().forEach(context => context.revert());
+    window.onWeglotReady = oldReady;
+  };
+};
